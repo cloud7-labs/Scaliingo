@@ -9,6 +9,12 @@ lazy val root = (project in file("."))
     maxErrors := 3,
     startYear := Some(2023),
     libraryDependencies ++= Seq(
+      "com.typesafe.akka" %% "akka-actor" % AkkaVersion,
+      "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
+      "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
+      "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion,
+      "org.typelevel" %% "cats-core" % "2.9.0",
+      "com.typesafe" % "config" % "1.4.2",
       "ch.qos.logback" % "logback-classic" % "1.4.7",
       "org.scalatest" %% "scalatest" % "3.2.15" % Test
     ),
