@@ -6,9 +6,9 @@ Scaliingo is a Scala client for interfacing with the Tiingo API. This robust lib
 
 To use Scaliingo in your SBT project, add the following line to your `build.sbt` file:
 
-    ``` scala
-    libraryDependencies += "app.cloud7" %% "scaliingo_2.12_1.0" % "0.1.0"
-    ```
+``` scala
+libraryDependencies += "app.cloud7" %% "scaliingo_2.12_1.0" % "0.1.0"
+```
 
 ## License
 
