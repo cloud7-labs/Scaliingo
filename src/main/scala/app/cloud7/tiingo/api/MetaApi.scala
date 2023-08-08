@@ -46,7 +46,7 @@ trait MetaApi extends Logging {
 
   val clientConfig: ClientConfig
 
-  val restClient: RestClient
+  protected val restClient: RestClient
 }
 
 /**

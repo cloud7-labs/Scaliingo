@@ -30,7 +30,7 @@ import scala.concurrent.Future
  */
 trait IexApi extends MetaApi {
 
-  import app.cloud7.tiingo.api.IexApi.{TobLastPrice, TobLastPriceEndpoint}
+  import app.cloud7.tiingo.api.IexApi._
 
   /**
    * Fetches the top of book last price data for tickers.
@@ -40,10 +40,27 @@ trait IexApi extends MetaApi {
    * @return A future of the top of book last price data.
    */
   def fetchTobLastPrice(
-                         tickers: List[String] = List.empty,
-                         resampleFreq: Option[String] = None
-                       ): Future[List[TobLastPrice]] =
+      tickers: List[String] = List.empty,
+      resampleFreq: Option[String] = None
+  ): Future[List[TobLastPrice]] =
     TobLastPriceEndpoint(tickers, resampleFreq, restClient).fetch
+
+  /**
+   * Fetches the historical price data for a ticker.
+   *
+   * @param ticker The ticker.
+   * @param frequency The frequency.
+   * @return A future list of the historical price data.
+   */
+  def fetchHistoricalPriceData(
+      ticker: String,
+      frequency: Option[String] = None
+  ): Future[List[HistoricalPriceData]] =
+    HistoricalPriceDataEndpoint(
+      ticker,
+      frequency,
+      restClient
+    ).fetch
 }
 
 /**
@@ -57,8 +74,8 @@ object IexApi {
   import scala.concurrent.ExecutionContext
 
   def apply(
-             config: ClientConfig
-           )(implicit _system: ActorSystem, _ec: ExecutionContext): IexApi =
+      config: ClientConfig
+  )(implicit _system: ActorSystem, _ec: ExecutionContext): IexApi =
     new IexApi {
       implicit override val system: ActorSystem = _system
       implicit override val ec: ExecutionContext = _ec
@@ -80,14 +97,16 @@ object IexApi {
      * @return A cats Validated of an endpoint exception or a string.
      */
     def validateResampleFreq(
-                              resampleFreq: String
-                            ): Validated[EndpointException, String] = {
+        resampleFreq: String
+    ): Validated[EndpointException, String] = {
       if (resampleFreq.matches("^[0-9]+(min|hour)$")) {
         Validated.Valid(resampleFreq)
       } else {
         Validated.Invalid(EndpointException.InvalidResampleFreq(resampleFreq))
       }
     }
+
+    override val endpointPath = Uri.Path("/iex/")
   }
 
   /**
@@ -112,26 +131,47 @@ object IexApi {
    * @param askPrice          the ask price.
    */
   final case class TobLastPrice(
-                                 ticker: String,
-                                 timestamp: String,
-                                 quoteTimestamp: String,
-                                 lastSaleTimestamp: String,
-                                 last: Double,
-                                 lastSize: Option[Int],
-                                 tngoLast: Double,
-                                 prevClose: Double,
-                                 open: Double,
-                                 high: Double,
-                                 low: Double,
-                                 mid: Double,
-                                 volume: Int,
-                                 bidSize: Option[Int],
-                                 bidPrice: Double,
-                                 askSize: Option[Int],
-                                 askPrice: Double
-                               ) {
+      ticker: String,
+      timestamp: String,
+      quoteTimestamp: String,
+      lastSaleTimestamp: String,
+      last: Double,
+      lastSize: Option[Int],
+      tngoLast: Double,
+      prevClose: Double,
+      open: Double,
+      high: Double,
+      low: Double,
+      mid: Double,
+      volume: Int,
+      bidSize: Option[Int],
+      bidPrice: Double,
+      askSize: Option[Int],
+      askPrice: Double
+  ) {
     override def toString =
       s"TobLastPrice($ticker, $timestamp, $quoteTimestamp, $lastSaleTimestamp, $last, $lastSize, $tngoLast, $prevClose, $open, $high, $low, $mid, $volume, $bidSize, $bidPrice, $askSize, $askPrice)"
+  }
+
+  /**
+   * Represents historical price data for a ticker from the IEX endpoint.
+   *
+   * @param date  the date of the data.
+   * @param open  the opening price.
+   * @param high  the highest price.
+   * @param low   the lowest price.
+   * @param close the closing price.
+   */
+  final case class HistoricalPriceData(
+      date: String,
+      open: Double,
+      high: Double,
+      low: Double,
+      close: Double,
+      volume: Option[Int]
+  ) {
+    override def toString =
+      s"HistoricalPriceData($date, $open, $high, $low, $close)"
   }
 
   /**
@@ -143,11 +183,11 @@ object IexApi {
    * @param um           The unmarshaller.
    */
   final case class TobLastPriceEndpoint(
-                                         tickers: List[String] = List.empty,
-                                         resampleFreq: Option[String],
-                                         restClient: RestClient
-                                       )(implicit val um: Unmarshaller[ResponseEntity, List[TobLastPrice]])
-    extends IexEndpoint[List[TobLastPrice]] {
+      tickers: List[String] = List.empty,
+      resampleFreq: Option[String],
+      restClient: RestClient
+  )(implicit val um: Unmarshaller[ResponseEntity, List[TobLastPrice]])
+      extends IexEndpoint[List[TobLastPrice]] {
 
     override val query: Uri.Query = {
       val validatedResampleFreq: String = resampleFreq match {
@@ -167,7 +207,42 @@ object IexApi {
         "format" -> "json"
       )
     }
+  }
 
-    override val endpointPath = Uri.Path("/iex/")
+  /**
+   * Represents the historical price data endpoint.
+   *
+   * @param ticker The ticker.
+   * @param resampleFreq The resample frequency.
+   * @param restClient The REST client.
+   * @param um The unmarshaller.
+   */
+  final case class HistoricalPriceDataEndpoint(
+      ticker: String,
+      resampleFreq: Option[String],
+      restClient: RestClient
+  )(implicit val um: Unmarshaller[ResponseEntity, List[HistoricalPriceData]])
+      extends IexEndpoint[List[HistoricalPriceData]] {
+
+    override val query: Uri.Query = {
+      val validatedResampleFreq: String = resampleFreq match {
+        case Some(freq) =>
+          validateResampleFreq(freq).fold(
+            e => {
+              logger.info(e.getMessage)
+              "1min"
+            },
+            r => r
+          )
+        case None => "1min"
+      }
+      Uri.Query(
+        "resampleFreq" -> validatedResampleFreq,
+        "columns" -> "date,open,high,low,close,volume",
+        "format" -> "json"
+      )
+    }
+
+    override val endpointPath = Uri.Path(s"/iex/$ticker/prices")
   }
 }

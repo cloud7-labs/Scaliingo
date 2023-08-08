@@ -37,4 +37,7 @@ object JsonProtocol extends SprayJsonSupport with DefaultJsonProtocol {
     IexApi.TobLastPrice
   )
 
+  implicit val iexHistoricalPriceDataFormat: RootJsonFormat[IexApi.HistoricalPriceData] =
+    jsonFormat6(IexApi.HistoricalPriceData)
+
 }

@@ -29,7 +29,9 @@ class IexApiSpec extends AnyWordSpec with Matchers {
   implicit val system: ActorSystem = ActorSystem()
   val clientConfig = ClientConfig()
   val restClient = RestClient(clientConfig)
-  val mockTickers = List("AAPL", "GOOGL")
+  val mockTicker1 = "AAPL"
+  val mockTicker2 = "GOOGL"
+  val mockTickers = List(mockTicker1, mockTicker2)
 
   "TobLastPriceEndpoint" should {
     "be able to be created" in {
@@ -43,6 +45,21 @@ class IexApiSpec extends AnyWordSpec with Matchers {
       data should not be null
       val result = Await.result(data, 5.seconds)
       result.head.ticker shouldBe mockTickers.head
+    }
+  }
+
+  "HistoricalPriceDataEndpoint" should {
+    "be able to be created" in {
+      val endpoint = IexApi.HistoricalPriceDataEndpoint(mockTicker1, None, restClient)
+      endpoint should not be null
+    }
+
+    "be able to fetch data" in {
+      val endpoint = IexApi.HistoricalPriceDataEndpoint(mockTicker1, None, restClient)
+      val data = endpoint.fetch
+      data should not be null
+      val result = Await.result(data, 5.seconds)
+      result should not be null
     }
   }
 }
