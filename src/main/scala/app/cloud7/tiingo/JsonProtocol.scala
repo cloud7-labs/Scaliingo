@@ -33,8 +33,8 @@ object JsonProtocol extends SprayJsonSupport with DefaultJsonProtocol {
     EodApi.PriceData
   )
 
-  implicit val iexTobLastPriceFormat: RootJsonFormat[IexApi.TobLastPrice] = jsonFormat17(
-    IexApi.TobLastPrice
+  implicit val iexTobLastPriceFormat: RootJsonFormat[IexApi.LatestPriceData] = jsonFormat17(
+    IexApi.LatestPriceData
   )
 
   implicit val iexHistoricalPriceDataFormat: RootJsonFormat[IexApi.HistoricalPriceData] =

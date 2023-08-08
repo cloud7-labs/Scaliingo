@@ -22,6 +22,10 @@ import app.cloud7.tiingo.exceptions.EndpointException
 import app.cloud7.tiingo.JsonProtocol._
 import app.cloud7.tiingo.RestClient
 import cats.data._
+import akka.actor.ActorSystem
+import app.cloud7.tiingo.ClientConfig
+
+import scala.concurrent.ExecutionContext
 
 import scala.concurrent.Future
 
@@ -33,17 +37,17 @@ trait IexApi extends MetaApi {
   import app.cloud7.tiingo.api.IexApi._
 
   /**
-   * Fetches the top of book last price data for tickers.
+   * Fetches latest price data for tickers.
    *
    * @param tickers      The tickers to fetch.
    * @param resampleFreq The resample frequency.
-   * @return A future of the top of book last price data.
+   * @return A future of the latest price data.
    */
-  def fetchTobLastPrice(
+  def fetchLatestPriceData(
       tickers: List[String] = List.empty,
       resampleFreq: Option[String] = None
-  ): Future[List[TobLastPrice]] =
-    TobLastPriceEndpoint(tickers, resampleFreq, restClient).fetch
+  ): Future[List[LatestPriceData]] =
+    LatestPriceDataEndpoint(tickers, resampleFreq, restClient).fetch
 
   /**
    * Fetches the historical price data for a ticker.
@@ -67,11 +71,6 @@ trait IexApi extends MetaApi {
  * Companion object for the IexApi trait.
  */
 object IexApi {
-
-  import akka.actor.ActorSystem
-  import app.cloud7.tiingo.ClientConfig
-
-  import scala.concurrent.ExecutionContext
 
   def apply(
       config: ClientConfig
@@ -110,7 +109,7 @@ object IexApi {
   }
 
   /**
-   * Represents the last price data for a ticker from the IEX endpoint.
+   * Represents the latest price data for a ticker from the IEX endpoint.
    *
    * @param ticker            the ticker symbol.
    * @param timestamp         the timestamp of the data.
@@ -130,7 +129,7 @@ object IexApi {
    * @param askSize           the size of the ask.
    * @param askPrice          the ask price.
    */
-  final case class TobLastPrice(
+  final case class LatestPriceData(
       ticker: String,
       timestamp: String,
       quoteTimestamp: String,
@@ -150,7 +149,7 @@ object IexApi {
       askPrice: Double
   ) {
     override def toString =
-      s"TobLastPrice($ticker, $timestamp, $quoteTimestamp, $lastSaleTimestamp, $last, $lastSize, $tngoLast, $prevClose, $open, $high, $low, $mid, $volume, $bidSize, $bidPrice, $askSize, $askPrice)"
+      s"LatestPriceData($ticker, $timestamp, $quoteTimestamp, $lastSaleTimestamp, $last, $lastSize, $tngoLast, $prevClose, $open, $high, $low, $mid, $volume, $bidSize, $bidPrice, $askSize, $askPrice)"
   }
 
   /**
@@ -175,19 +174,19 @@ object IexApi {
   }
 
   /**
-   * Represents the top of book last price endpoint.
+   * Represents the latest price data endpoint.
    *
    * @param tickers      The list of tickers.
    * @param resampleFreq The resample frequency.
    * @param restClient   The REST client.
    * @param um           The unmarshaller.
    */
-  final case class TobLastPriceEndpoint(
+  final case class LatestPriceDataEndpoint(
       tickers: List[String] = List.empty,
       resampleFreq: Option[String],
       restClient: RestClient
-  )(implicit val um: Unmarshaller[ResponseEntity, List[TobLastPrice]])
-      extends IexEndpoint[List[TobLastPrice]] {
+  )(implicit val um: Unmarshaller[ResponseEntity, List[LatestPriceData]])
+      extends IexEndpoint[List[LatestPriceData]] {
 
     override val query: Uri.Query = {
       val validatedResampleFreq: String = resampleFreq match {

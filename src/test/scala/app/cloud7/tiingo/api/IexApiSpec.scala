@@ -25,7 +25,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class IexApiSpec extends AnyWordSpec with Matchers {
+class IexApiSpec extends AnyWordSpec with Matchers with Logging {
   implicit val system: ActorSystem = ActorSystem()
   val clientConfig = ClientConfig()
   val restClient = RestClient(clientConfig)
@@ -33,18 +33,19 @@ class IexApiSpec extends AnyWordSpec with Matchers {
   val mockTicker2 = "GOOGL"
   val mockTickers = List(mockTicker1, mockTicker2)
 
-  "TobLastPriceEndpoint" should {
+  "LatestPriceDataEndpoint" should {
     "be able to be created" in {
-      val endpoint = IexApi.TobLastPriceEndpoint(mockTickers, None, restClient)
+      val endpoint = IexApi.LatestPriceDataEndpoint(mockTickers, None, restClient)
       endpoint should not be null
     }
 
     "be able to fetch data" in {
-      val endpoint = IexApi.TobLastPriceEndpoint(mockTickers, None, restClient)
+      val endpoint = IexApi.LatestPriceDataEndpoint(mockTickers, None, restClient)
       val data = endpoint.fetch
       data should not be null
       val result = Await.result(data, 5.seconds)
       result.head.ticker shouldBe mockTickers.head
+      logger.info(s"result: $result")
     }
   }
 
@@ -60,6 +61,7 @@ class IexApiSpec extends AnyWordSpec with Matchers {
       data should not be null
       val result = Await.result(data, 5.seconds)
       result should not be null
+      logger.info(s"result: ${result.take(3)}")
     }
   }
 }

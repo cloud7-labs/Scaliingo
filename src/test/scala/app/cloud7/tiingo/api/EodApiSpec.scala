@@ -25,7 +25,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class EodApiSpec extends AnyWordSpec with Matchers {
+class EodApiSpec extends AnyWordSpec with Matchers with Logging {
   implicit val system: ActorSystem = ActorSystem()
   val clientConfig = ClientConfig()
   val restClient = RestClient(clientConfig)
@@ -42,6 +42,7 @@ class EodApiSpec extends AnyWordSpec with Matchers {
       val data = endpoint.fetch
       val result = Await.result(data, 5.seconds)
       result.ticker shouldBe mockTicker
+      logger.info(s"result: $result")
     }
   }
 
@@ -56,6 +57,7 @@ class EodApiSpec extends AnyWordSpec with Matchers {
       val data = endpoint.fetch
       val result = Await.result(data, 5.seconds)
       result should not be null
+      logger.info(s"result: $result")
     }
 
     "be able to fetch data with start date" in {
@@ -64,6 +66,7 @@ class EodApiSpec extends AnyWordSpec with Matchers {
       val data = endpoint.fetch
       val result = Await.result(data, 5.seconds)
       result should not be null
+      logger.info(s"result: $result")
     }
   }
 }

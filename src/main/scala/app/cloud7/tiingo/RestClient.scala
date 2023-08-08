@@ -238,7 +238,7 @@ final case class RestClient(config: ClientConfig)(implicit
 
     responseFuture.flatMap { response =>
       logger.info(
-        s"Received response with status code: ${response.status.intValue} and content-type: ${response.entity.contentType}"
+        s"Status code: ${response.status.intValue}/Content-Type: ${response.entity.contentType}"
       )
 
       response.status match {
