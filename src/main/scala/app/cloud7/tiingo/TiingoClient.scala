@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 crotodev
+ * Copyright 2023 cloud7
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package app.cloud7.tiingo
 
 import akka.actor.ActorSystem
-import app.cloud7.tiingo.api.EodApi
+import app.cloud7.tiingo.api._
 
 import scala.concurrent.ExecutionContext
 
@@ -37,9 +37,16 @@ final case class TiingoClient(
   val config: ClientConfig = ClientConfig(apiKey, headers)
 
   /**
-   * Get the EOD API.
+   * Gets the EOD API.
    *
    * @return The EOD API.
    */
   def getEod: EodApi = EodApi(config)
+
+  /**
+   * Gets the IEX API.
+   *
+   * @return The IEX API.
+   */
+  def getIex: IexApi = IexApi(config)
 }
