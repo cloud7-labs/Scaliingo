@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 crotodev
+ * Copyright 2023 cloud7
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ package app.cloud7.tiingo.api
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.{ResponseEntity, Uri}
 import akka.http.scaladsl.unmarshalling.Unmarshaller
-import cats.data.Validated
 import app.cloud7.tiingo.{ClientConfig, RestClient}
+import cats.data.Validated
 import org.slf4j.{Logger, LoggerFactory}
 
 import java.text.{ParseException, SimpleDateFormat}
@@ -46,7 +46,7 @@ trait MetaApi extends Logging {
 
   val clientConfig: ClientConfig
 
-  val restClient: RestClient
+  protected val restClient: RestClient
 }
 
 /**
@@ -56,10 +56,7 @@ trait MetaApi extends Logging {
  */
 trait MetaEndpoint[T] extends Logging {
 
-  import app.cloud7.tiingo.exceptions.EndpointException.{
-    InvalidDateFormat,
-    InvalidDateRange
-  }
+  import app.cloud7.tiingo.exceptions.EndpointException.{InvalidDateFormat, InvalidDateRange}
 
   implicit val um: Unmarshaller[ResponseEntity, T]
 

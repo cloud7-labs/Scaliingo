@@ -25,48 +25,43 @@ import org.scalatest.wordspec.AnyWordSpec
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class EodApiSpec extends AnyWordSpec with Matchers with Logging {
+class IexApiSpec extends AnyWordSpec with Matchers with Logging {
   implicit val system: ActorSystem = ActorSystem()
   val clientConfig = ClientConfig()
   val restClient = RestClient(clientConfig)
-  val mockTicker = "AAPL"
+  val mockTicker1 = "AAPL"
+  val mockTicker2 = "GOOGL"
+  val mockTickers = List(mockTicker1, mockTicker2)
 
-  "MetaDataEndpoint" should {
+  "LatestPriceDataEndpoint" should {
     "be able to be created" in {
-      val endpoint = EodApi.MetaDataEndpoint(mockTicker, restClient)
+      val endpoint = IexApi.LatestPriceDataEndpoint(mockTickers, None, restClient)
       endpoint should not be null
     }
 
     "be able to fetch data" in {
-      val endpoint = EodApi.MetaDataEndpoint(mockTicker, restClient)
+      val endpoint = IexApi.LatestPriceDataEndpoint(mockTickers, None, restClient)
       val data = endpoint.fetch
+      data should not be null
       val result = Await.result(data, 5.seconds)
-      result.ticker shouldBe mockTicker
+      result.head.ticker shouldBe mockTickers.head
       logger.info(s"result: $result")
     }
   }
 
-  "PriceDataEndpoint" should {
+  "HistoricalPriceDataEndpoint" should {
     "be able to be created" in {
-      val endpoint = EodApi.PriceDataEndpoint(mockTicker, None, None, None, restClient)
+      val endpoint = IexApi.HistoricalPriceDataEndpoint(mockTicker1, None, restClient)
       endpoint should not be null
     }
 
     "be able to fetch data" in {
-      val endpoint = EodApi.PriceDataEndpoint(mockTicker, None, None, None, restClient)
+      val endpoint = IexApi.HistoricalPriceDataEndpoint(mockTicker1, None, restClient)
       val data = endpoint.fetch
+      data should not be null
       val result = Await.result(data, 5.seconds)
       result should not be null
-      logger.info(s"result: $result")
-    }
-
-    "be able to fetch data with start date" in {
-      val endpoint =
-        EodApi.PriceDataEndpoint(mockTicker, Some("2020-01-01"), None, None, restClient)
-      val data = endpoint.fetch
-      val result = Await.result(data, 5.seconds)
-      result should not be null
-      logger.info(s"result: $result")
+      logger.info(s"result: ${result.take(3)}")
     }
   }
 }
