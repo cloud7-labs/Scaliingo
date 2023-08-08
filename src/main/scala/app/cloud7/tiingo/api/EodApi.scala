@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 crotodev
+ * Copyright 2023 cloud7
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,11 @@ package app.cloud7.tiingo.api
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.{ResponseEntity, Uri}
 import akka.http.scaladsl.unmarshalling.Unmarshaller
-import cats.data.Validated
 import app.cloud7.tiingo.exceptions._
 import app.cloud7.tiingo.JsonProtocol._
 import app.cloud7.tiingo.RestClient
 import app.cloud7.tiingo.exceptions.EndpointException._
+import cats.data.Validated
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -148,7 +148,7 @@ object EodApi {
      * Validates the resample frequency.
      *
      * @param resampleFreq The resample frequency.
-     * @return A cats Validated of  or a string.
+     * @return A cats Validated of or a string.
      */
     def validateResampleFreq(
         resampleFreq: String

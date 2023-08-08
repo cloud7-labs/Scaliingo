@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 crotodev
+ * Copyright 2023 cloud7
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +17,24 @@
 package app.cloud7.tiingo
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import app.cloud7.tiingo.api.EodApi
+import app.cloud7.tiingo.api._
 import spray.json._
 
 /**
  * Provides the JSON protocol for unmarshalling Tiingo API responses.
  */
 object JsonProtocol extends SprayJsonSupport with DefaultJsonProtocol {
+
   implicit val eodMetaDataFormat: RootJsonFormat[EodApi.MetaData] = jsonFormat6(
     EodApi.MetaData
   )
 
   implicit val eodPriceDataFormat: RootJsonFormat[EodApi.PriceData] = jsonFormat13(
     EodApi.PriceData
+  )
+
+  implicit val iexTobLastPriceFormat: RootJsonFormat[IexApi.TobLastPrice] = jsonFormat17(
+    IexApi.TobLastPrice
   )
 
 }

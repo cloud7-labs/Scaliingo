@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 crotodev
+ * Copyright 2023 cloud7
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,15 @@ package app.cloud7.tiingo
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.unmarshalling.{Unmarshal, Unmarshaller}
 import akka.pattern.after
+import app.cloud7.tiingo.api.Logging
+import app.cloud7.tiingo.exceptions.ClientException
+import app.cloud7.tiingo.exceptions.ClientException._
 import cats.data.Validated
 import cats.implicits._
 import com.typesafe.config.ConfigFactory
-import app.cloud7.tiingo.exceptions.ClientException
-import app.cloud7.tiingo.exceptions.ClientException._
 
 import scala.concurrent.{ExecutionContext, Future, TimeoutException}
 import scala.concurrent.duration._
@@ -66,7 +68,9 @@ object ClientConfig {
     )
 
     val headersList =
-      parseHeaders(headers + ("Authorization" -> s"Token $k"))
+      parseHeaders(
+        headers + ("Authorization" -> s"Token $k")
+      )
 
     val pause = FiniteDuration(config.getLong("api.pause"), "seconds")
     val timeout = FiniteDuration(config.getLong("api.timeout"), "seconds")
@@ -148,7 +152,7 @@ object ClientConfig {
  */
 final case class RestClient(config: ClientConfig)(implicit
     system: ActorSystem
-) {
+) extends Logging {
 
   implicit val ec: ExecutionContext = system.dispatcher
 
@@ -182,7 +186,14 @@ final case class RestClient(config: ClientConfig)(implicit
       pause: FiniteDuration,
       timeout: FiniteDuration
   )(implicit um: Unmarshaller[ResponseEntity, A]): Future[A] =
-    makeRequestWithMethod(HttpMethods.GET, url, headers, HttpEntity.Empty, pause, timeout)
+    makeRequestWithMethod(
+      HttpMethods.GET,
+      url,
+      headers,
+      HttpEntity(ContentTypes.`application/json`, ""),
+      pause,
+      timeout
+    )
 
   /**
    * Makes a HTTP request with the specified method, url, headers, and entity. The request will be paused for the specified duration
@@ -225,6 +236,35 @@ final case class RestClient(config: ClientConfig)(implicit
       after(pause, system.scheduler)(requestWithTimeout)
     }
 
-    responseFuture.flatMap(response => Unmarshal(response.entity).to[A])
+    responseFuture.flatMap { response =>
+      logger.info(
+        s"Received response with status code: ${response.status.intValue} and content-type: ${response.entity.contentType}"
+      )
+
+      response.status match {
+        // Handle redirect status codes
+        case StatusCodes.MovedPermanently | StatusCodes.Found =>
+          response.header[Location] match {
+            case Some(location) =>
+              logger.info(s"Redirecting to: ${location.uri}")
+              makeRequestWithMethod(
+                method,
+                location.uri,
+                headers,
+                entity,
+                pause,
+                timeout
+              ) // Recursive call
+            case None =>
+              Future.failed(new Exception("Redirect status without location header"))
+          }
+        case otherStatus if otherStatus.isFailure() =>
+          Unmarshal(response.entity)
+            .to[String]
+            .flatMap(body => Future.failed(new Exception(s"Failed response body: $body")))
+        case _ =>
+          Unmarshal(response.entity).to[A]
+      }
+    }
   }
 }
