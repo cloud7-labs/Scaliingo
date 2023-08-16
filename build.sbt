@@ -35,7 +35,8 @@ lazy val root = (project in file("."))
       case x                   => (assembly / assemblyMergeStrategy).value(x)
     },
     semanticdbEnabled := true,
-    sbtPlugin := true
+    sbtPlugin := true,
+    crossScalaVersions := Seq("2.12.17", "2.13.6")
   )
   .settings(publishSettings *)
 
