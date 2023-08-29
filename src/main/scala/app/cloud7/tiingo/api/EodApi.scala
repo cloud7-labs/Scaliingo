@@ -19,10 +19,10 @@ package app.cloud7.tiingo.api
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.{ResponseEntity, Uri}
 import akka.http.scaladsl.unmarshalling.Unmarshaller
-import app.cloud7.tiingo.exceptions._
-import app.cloud7.tiingo.JsonProtocol._
+import app.cloud7.tiingo.exceptions.*
+import app.cloud7.tiingo.JsonProtocol.*
 import app.cloud7.tiingo.RestClient
-import app.cloud7.tiingo.exceptions.EndpointException._
+import app.cloud7.tiingo.exceptions.EndpointException.*
 import cats.data.Validated
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -32,7 +32,7 @@ import scala.concurrent.{ExecutionContext, Future}
  */
 trait EodApi extends MetaApi {
 
-  import app.cloud7.tiingo.api.EodApi._
+  import app.cloud7.tiingo.api.EodApi.*
 
   /**
    * Fetches the metadata of a ticker.
@@ -239,7 +239,7 @@ object EodApi {
       Uri.Query(withResampleFreq.getOrElse(queryMap))
     }
 
-    override val endpointPath = Uri.Path(s"/tiingo/daily/$ticker/prices")
+    override val endpointPath: Uri.Path = Uri.Path(s"/tiingo/daily/$ticker/prices")
 
   }
 }

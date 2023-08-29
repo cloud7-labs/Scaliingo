@@ -17,7 +17,7 @@
 package app.cloud7.tiingo
 
 import akka.actor.ActorSystem
-import app.cloud7.tiingo.api._
+import app.cloud7.tiingo.api.*
 
 import scala.concurrent.ExecutionContext
 

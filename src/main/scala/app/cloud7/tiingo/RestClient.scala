@@ -18,19 +18,19 @@ package app.cloud7.tiingo
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.*
 import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.unmarshalling.{Unmarshal, Unmarshaller}
 import akka.pattern.after
 import app.cloud7.tiingo.api.Logging
 import app.cloud7.tiingo.exceptions.ClientException
-import app.cloud7.tiingo.exceptions.ClientException._
+import app.cloud7.tiingo.exceptions.ClientException.*
 import cats.data.Validated
-import cats.implicits._
+import cats.implicits.*
 import com.typesafe.config.ConfigFactory
 
 import scala.concurrent.{ExecutionContext, Future, TimeoutException}
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
 /**
  * Configuration for [[RestClient]].

@@ -17,8 +17,8 @@
 package app.cloud7.tiingo
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import app.cloud7.tiingo.api._
-import spray.json._
+import app.cloud7.tiingo.api.*
+import spray.json.*
 
 /**
  * Provides the JSON protocol for unmarshalling Tiingo API responses.

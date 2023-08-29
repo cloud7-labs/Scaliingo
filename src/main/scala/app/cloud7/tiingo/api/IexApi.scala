@@ -16,12 +16,12 @@
 
 package app.cloud7.tiingo.api
 
-import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.*
 import akka.http.scaladsl.unmarshalling.Unmarshaller
 import app.cloud7.tiingo.exceptions.EndpointException
-import app.cloud7.tiingo.JsonProtocol._
+import app.cloud7.tiingo.JsonProtocol.*
 import app.cloud7.tiingo.RestClient
-import cats.data._
+import cats.data.*
 import akka.actor.ActorSystem
 import app.cloud7.tiingo.ClientConfig
 
@@ -34,7 +34,7 @@ import scala.concurrent.Future
  */
 trait IexApi extends MetaApi {
 
-  import app.cloud7.tiingo.api.IexApi._
+  import app.cloud7.tiingo.api.IexApi.*
 
   /**
    * Fetches latest price data for tickers.
@@ -105,7 +105,7 @@ object IexApi {
       }
     }
 
-    override val endpointPath = Uri.Path("/iex/")
+    override val endpointPath: Uri.Path = Uri.Path("/iex/")
   }
 
   /**
@@ -242,6 +242,6 @@ object IexApi {
       )
     }
 
-    override val endpointPath = Uri.Path(s"/iex/$ticker/prices")
+    override val endpointPath: Uri.Path = Uri.Path(s"/iex/$ticker/prices")
   }
 }
