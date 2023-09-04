@@ -32,21 +32,32 @@ import scala.concurrent.ExecutionContext
 final case class TiingoClient(
     apiKey: Option[String] = None,
     headers: Map[String, String] = Map.empty
-)(implicit val system: ActorSystem, val ec: ExecutionContext) {
+)(implicit val system: ActorSystem, val ec: ExecutionContext) extends EodApi with IexApi {
+  val clientConfig: ClientConfig = ClientConfig(apiKey, headers)
+  val restClient: RestClient = RestClient(clientConfig)
+}
 
-  val config: ClientConfig = ClientConfig(apiKey, headers)
+/**
+ * Companion object for [[TiingoClient]].
+ */
+object TiingoClient {
+  /**
+   *
+   * @param apiKey The Tiingo API key.
+   * @param system The actor system.
+   * @param ec   The execution context.
+   * @return A new [[TiingoClient]].
+   */
+  def apply(apiKey: String)(implicit system: ActorSystem, ec: ExecutionContext): TiingoClient =
+        TiingoClient(Some(apiKey))
 
   /**
-   * Gets the EOD API.
-   *
-   * @return The EOD API.
+   * @param apiKey The Tiingo API key.
+   * @param headers Additional HTTP headers to include in the API requests.
+   * @param system The actor system.
+   * @param ec  The execution context.
+   * @return A new [[TiingoClient]].
    */
-  def getEod: EodApi = EodApi(config)
-
-  /**
-   * Gets the IEX API.
-   *
-   * @return The IEX API.
-   */
-  def getIex: IexApi = IexApi(config)
+  def apply(apiKey: String, headers: Map[String, String])(implicit system: ActorSystem, ec: ExecutionContext): TiingoClient =
+        TiingoClient(Some(apiKey), headers)
 }

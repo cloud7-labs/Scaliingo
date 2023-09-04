@@ -25,14 +25,11 @@ import dev.cloud7.tiingo._
 // Create a new TiingoClient instance
 val client = TiingoClient(Some("YOUR_API_KEY"))
 
-// Access the EodApi
-val eodApi = client.getEod
-
 // Get a ticker's metadata
-val metadata = eodApi.fetchMetaData("GOOGL")
+val metadata = client.fetchTickerMetaData("GOOGL")
 
 // Get a ticker's end-of-day data
-val priceData = eodApi.fetchPriceData(
+val priceData = client.fetchTickerPriceData(
     ticker = "GOOGL", 
     startDate = Some("2020-01-01"), 
     endDate = Some("2020-01-31"), 
