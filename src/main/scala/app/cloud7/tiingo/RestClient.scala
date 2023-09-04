@@ -19,6 +19,7 @@ package app.cloud7.tiingo
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.*
+import akka.http.scaladsl.model.HttpHeader.ParsingResult
 import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.unmarshalling.{Unmarshal, Unmarshaller}
 import akka.pattern.after
@@ -70,7 +71,10 @@ object ClientConfig {
     val headersList =
       parseHeaders(
         headers + ("Authorization" -> s"Token $k")
-      )
+      ) match {
+        case Left(err) => throw err
+        case Right(v)  => v
+      }
 
     val pause = FiniteDuration(config.getLong("api.pause"), "seconds")
     val timeout = FiniteDuration(config.getLong("api.timeout"), "seconds")
@@ -128,20 +132,22 @@ object ClientConfig {
    * Parses a map of HTTP headers into a list of HttpHeader.
    *
    * @param headerMap The map of HTTP headers to parse.
-   * @return The list of parsed HttpHeader. If a header fails to parse, an error message is printed and the header is omitted.
+   * @return An either containing the list of HttpHeader if the parsing was successful, or a header parsing exception otherwise.
    */
   private def parseHeaders(
       headerMap: Map[String, String]
-  ): List[HttpHeader] =
-    headerMap.toList.flatMap { case (key, value) =>
-      HttpHeader.parse(key, value) match {
-        case HttpHeader.ParsingResult.Ok(parsedHeader, _) =>
-          Some(parsedHeader)
-        case HttpHeader.ParsingResult.Error(error) =>
-          println(s"Failed to parse header '$key: $value': $error")
-          None
+  ): Either[HeaderParsingException, List[HttpHeader]] =
+    headerMap
+      .map {
+        case (key, value) =>
+          HttpHeader.parse(key, value) match {
+            case ParsingResult.Ok(header, _) => Right(header)
+            case ParsingResult.Error(_) =>
+              Left(HeaderParsingException(key, value))
+          }
       }
-    }
+      .toList
+      .sequence
 }
 
 /**
