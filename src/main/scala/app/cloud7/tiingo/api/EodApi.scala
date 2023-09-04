@@ -40,7 +40,7 @@ trait EodApi extends MetaApi {
    * @param ticker The ticker symbol.
    * @return A future of the metadata.
    */
-  def fetchMetaData(ticker: String): Future[MetaData] =
+  def fetchTickerMetaData(ticker: String): Future[MetaData] =
     MetaDataEndpoint(ticker, restClient).fetch
 
   /**
@@ -52,7 +52,7 @@ trait EodApi extends MetaApi {
    * @param frequency The frequency of the data.
    * @return A future sequence of the price data.
    */
-  def fetchPriceData(
+  def fetchTickerPriceData(
       ticker: String,
       startDate: Option[String] = None,
       endDate: Option[String] = None,
